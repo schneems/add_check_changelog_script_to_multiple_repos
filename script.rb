@@ -36,7 +36,6 @@ buildpacks.each do |pack|
   run("git clone #{url}") unless Dir.exist?(pack)
 
   Dir.chdir(pack) do
-    run("hub fork")
     run("mkdir -p .github/workflows/")
     run("git co -b schneems/check-changelog")
 
@@ -72,8 +71,9 @@ buildpacks.each do |pack|
     end
     run("git add .github/workflows/check_changelog.yml")
     run("git commit -F commit.msg")
-    run("git push schneems")
-    run("hub pull-request -F commit.msg")
+
+    run("git push origin")
+    run("hub pull-request master -F commit.msg -h heroku:schneems/check-changelog")
   end
 rescue => e
   puts "#{pack} failed #{e.message}"
