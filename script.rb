@@ -36,11 +36,15 @@ buildpacks.each do |pack|
   run("git clone #{url}") unless Dir.exist?(pack)
 
   Dir.chdir(pack) do
+    run("git co -b schneems/check-changelog-fix-escaping")
+
     run("mkdir -p .github/workflows/")
-    run("git co -b schneems/check-changelog")
 
     File.open(".github/workflows/check_changelog.yml", "w+") do |f|
-      f.puts <<~FILE
+      # Need to single quote this here doc otherwise the regex
+      # gets escaped
+      # https://stackoverflow.com/questions/29124058/string-literal-without-need-to-escape-backslash
+      f.puts <<~'FILE'
         name: Check Changelog
 
         on: [pull_request]
@@ -58,22 +62,16 @@ buildpacks.each do |pack|
 
     File.open("commit.msg", "w+") do |f|
       f.puts <<~FILE
-        [changelog skip] Ensure PRs include a Changelog entry
+        [changelog skip] Fix Escaping in Changelog Script
 
-        The goal of this PR is to add a github action that checks for the presence of a changelog entry.
-
-        It is better to add entries as a PR is merged instead of having to remember what was merged and generate a changelog at release time.
-
-        By automating this check, it's one less thing the maintainer has to remember, and it's one less thing a change might be blocked on i.e. "Looks good, but please add a changelog entry".
-
-        Let me know if you have any questions and Happy Friday!
+        The previous PR had a bug where the REGEX for grep was not properly escaped. This PR fixes that issue.
       FILE
     end
     run("git add .github/workflows/check_changelog.yml")
     run("git commit -F commit.msg")
 
     run("git push origin")
-    run("hub pull-request master -F commit.msg -h heroku:schneems/check-changelog")
+    run("hub pull-request master -F commit.msg -h heroku:schneems/check-changelog-fix-escaping")
   end
 rescue => e
   puts "#{pack} failed #{e.message}"
