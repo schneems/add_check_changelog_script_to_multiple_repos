@@ -13,7 +13,6 @@ buildpacks = %W{
   heroku-buildpack-clojure
   heroku-buildpack-jvm-common
   heroku-buildpack-apt
-  heroku-buildpack-grails
   heroku-buildpack-emberjs
   heroku-buildpack-cli
   heroku-buildpack-elixir
